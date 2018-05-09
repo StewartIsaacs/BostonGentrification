@@ -1,0 +1,425 @@
+<html>
+
+ <div id ="Intercept"style="position:absolute; top: 0px; left: 0px; width: 200px; height:200px; background:red; text-align: center;vertical-align: middle; line-height: 100px;font-size: 1em;"></div>
+ <div id ="Commute Time"style="position:absolute; top: 0px; left: 210px; width: 200px; height:200px; background:red; text-align: center;vertical-align: middle; line-height: 100px;font-size: 1em;"></div>
+ <div id ="Nonfamily Households"style="position:absolute; top: 0px; left: 420px; width: 200px; height:200px; background:red; text-align: center;vertical-align: middle; line-height: 100px;font-size: 1em;"></div>
+ <div id ="Poverty"style="position:absolute; top: 0px; left: 630px; width: 200px; height:200px; background:blue; text-align: center;vertical-align: middle; line-height: 100px;font-size: 1em;"></div>
+ <div id ="Total Population"style="position:absolute; top: 0px; left: 840px; width: 200px; height:200px; background:blue; text-align: center;vertical-align: middle; line-height: 100px;font-size: 1em;"></div>
+ <div id ="Unemployment"style="position:absolute; top: 0px; left: 1050px; width: 200px; height:200px; background:red; text-align: center;vertical-align: middle; line-height: 100px;font-size: 1em;"></div>
+ 
+
+<script type="text/javascript" src="combined_10.js"></script>
+<script type="text/javascript" src="combined_11.js"></script>
+<script type="text/javascript" src="combined_12.js"></script>
+<script type="text/javascript" src="combined_13.js"></script>
+<script type="text/javascript" src="combined_14.js"></script>
+<script type="text/javascript" src="combined_15.js"></script>
+<script type="text/javascript" src="combined_16.js"></script>
+<!-- <script type="text/javascript" src="complete_10.js"></script>
+
+<script type="text/javascript" src="complete_scores_1011.js"></script>
+<script type="text/javascript" src="complete_scores_1112.js"></script>
+<script type="text/javascript" src="complete_scores_1213.js"></script> -->
+
+<script>
+
+
+
+  y= [26, 38, 50, 62]
+
+x= [[4,6,8,10],[3,4,5,9],[1,2,6,8]]
+
+var delta_gen = function(year1, year2){
+    delta=[]
+    for (i=1;i<1479;i++){
+        temp =[]
+        temp.push(1)//This accounts for the intercept term
+        temp.push(Number(((Number(year2[i]["Mean travel time to work (mins)"])- Number(year1[i]["Mean travel time to work (mins)"]))/(0.01*Number(year1[i]["Mean travel time to work (mins)"]))).toFixed(2)))
+        temp.push(Number(((Number(year2[i]["Nonfamily Households"])- Number(year1[i]["Nonfamily Households"]))/(0.01*Number(year1[i]["Nonfamily Households"]))).toFixed(2)))
+        temp.push(Number(((Number(year2[i]["Poverty %"])- Number(year1[i]["Poverty %"]))/(0.01*Number(year1[i]["Poverty %"]))).toFixed(2)))
+        // temp.push(Number(((Number(year2[i]["Tot Households"])- Number(year1[i]["Tot Households%"]))/(0.01*Number(year1[i]["Tot Households%"]))).toFixed(2)))
+        temp.push(Number(((Number(year2[i]["Total Pop"])- Number(year1[i]["Total Pop"]))/(0.01*Number(year1[i]["Total Pop"]))).toFixed(2)))
+        temp.push(Number(((Number(year2[i]["Unemployment %"])- Number(year1[i]["Unemployment %"]))/(0.01*Number(year1[i]["Unemployment %"]))).toFixed(2)))
+       
+       delta.push(temp)
+
+}
+    
+    // year1.forEach(function(entry){
+    //     temp=[]
+    //     temp.push(Number(entry["Mean travel time to work (mins)"]))
+    //     temp.push(Number(entry["Nonfamily Households"]))
+    //     temp.push(Number(entry["Poverty %"]))
+    //     temp.push(Number(entry["Tot Households"]))
+    //     temp.push(Number(entry["Total Pop"]))
+    //     temp.push(Number(entry["Unemployment %"]))
+
+    //     delta.push(temp)
+    
+    //     })
+        console.log(delta)
+    return delta
+}
+
+delta_1011= delta_gen(data10, data11)
+delta_1112= delta_gen(data11, data12)
+delta_1213= delta_gen(data12, data13)
+delta_1314= delta_gen(data13, data14)
+delta_1415= delta_gen(data14, data15)
+delta_1516= delta_gen(data15, data16)
+
+big_matrix = delta_1011.concat(delta_1112).concat(delta_1213).concat(delta_1314).concat(delta_1415).concat(delta_1516)
+
+
+var score_gen = function(year1, year2){
+
+//Fetch %age white people in 1st year
+white_1 =[] 
+year1.forEach(function(entry){
+    white_1.push(entry['% White'])
+})
+
+//Fetch %age white people in 2nd year
+white_2 =[] 
+year2.forEach(function(entry){
+    white_2.push(entry['% White'])
+})
+
+console.log(white_1)
+console.log(white_2)
+
+//Calculate change in proportion of white people
+
+white_delta=[]
+
+for (i=1;i<1479;i++){
+    result = (Number(white_2[i])-Number(white_1[i])).toFixed(1)
+   white_delta.push(Number(result))
+}
+
+
+console.log(white_delta)
+
+//Fetch avg income in 1st year
+income_1 =[] 
+year1.forEach(function(entry){
+    income_1.push(entry['Per Capita Income'])
+})
+//Fetch avg income in 2nd year
+income_2 =[] 
+year2.forEach(function(entry){
+   income_2.push(entry['Per Capita Income'])
+})
+
+console.log(income_1)
+console.log(income_2)
+
+//Calculate change in avg income
+income_delta=[]
+
+for (i=1;i<1479;i++){
+    result = (Number(income_2[i])-Number(income_1[i]))/(0.01*Number(income_1[i]))
+    income_delta.push(Number(result.toFixed(2)))
+}
+
+console.log(income_delta)
+
+//Calculate score using specified weights
+score =[]
+for (i=1;i<1479;i++){
+    res =(0.43*income_delta[i]+0.57*white_delta[i])
+    score.push(Number(res.toFixed(2)))
+}
+
+console.log(score)
+
+return score
+}
+
+score_1011 = score_gen(data10, data11)
+score_1112 = score_gen(data11, data12)
+score_1213 = score_gen(data12, data13)
+score_1314 = score_gen(data13, data14)
+score_1415 = score_gen(data14, data15)
+score_1516 = score_gen(data15, data16)
+
+score_concat = score_1011.concat(score_1112).concat(score_1213).concat(score_1314).concat(score_1415).concat(score_1516)
+
+
+
+    // Returns the inverse of matrix `M`.
+    function matrix_invert(M){
+    // I use Guassian Elimination to calculate the inverse:
+    // (1) 'augment' the matrix (left) by the identity (on the right)
+    // (2) Turn the matrix on the left into the identity by elemetry row ops
+    // (3) The matrix on the right is the inverse (was the identity matrix)
+    // There are 3 elemtary row ops: (I combine b and c in my code)
+    // (a) Swap 2 rows
+    // (b) Multiply a row by a scalar
+    // (c) Add 2 rows
+    
+    //if the matrix isn't square: exit (error)
+    if(M.length !== M[0].length){return;}
+    
+    //create the identity matrix (I), and a copy (C) of the original
+    var i=0, ii=0, j=0, dim=M.length, e=0, t=0;
+    var I = [], C = [];
+    for(i=0; i<dim; i+=1){
+        // Create the row
+        I[I.length]=[];
+        C[C.length]=[];
+        for(j=0; j<dim; j+=1){
+            
+            //if we're on the diagonal, put a 1 (for identity)
+            if(i==j){ I[i][j] = 1; }
+            else{ I[i][j] = 0; }
+            
+            // Also, make the copy of the original
+            C[i][j] = M[i][j];
+        }
+    }
+    
+    // Perform elementary row operations
+    for(i=0; i<dim; i+=1){
+        // get the element e on the diagonal
+        e = C[i][i];
+        
+        // if we have a 0 on the diagonal (we'll need to swap with a lower row)
+        if(e==0){
+            //look through every row below the i'th row
+            for(ii=i+1; ii<dim; ii+=1){
+                //if the ii'th row has a non-0 in the i'th col
+                if(C[ii][i] != 0){
+                    //it would make the diagonal have a non-0 so swap it
+                    for(j=0; j<dim; j++){
+                        e = C[i][j];       //temp store i'th row
+                        C[i][j] = C[ii][j];//replace i'th row by ii'th
+                        C[ii][j] = e;      //repace ii'th by temp
+                        e = I[i][j];       //temp store i'th row
+                        I[i][j] = I[ii][j];//replace i'th row by ii'th
+                        I[ii][j] = e;      //repace ii'th by temp
+                    }
+                    //don't bother checking other rows since we've swapped
+                    break;
+                }
+            }
+            //get the new diagonal
+            e = C[i][i];
+            //if it's still 0, not invertable (error)
+            if(e==0){return}
+        }
+        
+        // Scale this row down by e (so we have a 1 on the diagonal)
+        for(j=0; j<dim; j++){
+            C[i][j] = C[i][j]/e; //apply to original matrix
+            I[i][j] = I[i][j]/e; //apply to identity
+        }
+        
+        // Subtract this row (scaled appropriately for each row) from ALL of
+        // the other rows so that there will be 0's in this column in the
+        // rows above and below this one
+        for(ii=0; ii<dim; ii++){
+            // Only apply to other rows (we want a 1 on the diagonal)
+            if(ii==i){continue;}
+            
+            // We want to change this element to 0
+            e = C[ii][i];
+            
+            // Subtract (the row above(or below) scaled by e) from (the
+            // current row) but start at the i'th column and assume all the
+            // stuff left of diagonal is 0 (which it should be if we made this
+            // algorithm correctly)
+            for(j=0; j<dim; j++){
+                C[ii][j] -= e*C[i][j]; //apply to original matrix
+                I[ii][j] -= e*I[i][j]; //apply to identity
+            }
+        }
+    }
+    
+    //we've done all operations, C should be the identity
+    //matrix I should be the inverse:
+    return I;
+}
+
+function multiply(a, b) {
+  var aNumRows = a.length, aNumCols = a[0].length,
+      bNumRows = b.length, bNumCols = b[0].length,
+      m = new Array(aNumRows);  // initialize array of rows
+  for (var r = 0; r < aNumRows; ++r) {
+    m[r] = new Array(bNumCols); // initialize the current row
+    for (var c = 0; c < bNumCols; ++c) {
+      m[r][c] = 0;             // initialize the current cell
+      for (var i = 0; i < aNumCols; ++i) {
+        m[r][c] += a[r][i] * b[i][c];
+      }
+    }
+  }
+  return m;
+}
+
+// function display(m) {
+//   for (var r = 0; r < m.length; ++r) {
+//     document.write('&nbsp;&nbsp;'+m[r].join(' ')+'<br />');
+//   }
+// }
+
+// var a = [[8, 3], [2, 4], [3, 6]],
+//     b = [[1, 2, 3], [4, 6, 8]];
+// document.write('matrix a:<br />');
+// display(a);
+// document.write('matrix b:<br />');
+// display(b);
+// document.write('a * b =<br />');
+// display(multiply(a, b));
+
+
+
+
+
+// var transpose = function(cell){
+//   var tmpCells = [];
+//   for(var i=0; i<cell.length; i++){
+//     tmpCells[i] = [];
+//     for(var j=0; j<cell[0].length; j++){
+//       tmpCells[i][j] = cell[j][i];
+//     }
+//   }
+//   return tmpCells;
+// }
+
+// baboon = transpose(x)
+
+// function transposeArray(array, arrayLength){
+//     var newArray = [];
+//     for(var i = 0; i < array.length; i++){
+//         newArray.push([]);
+//     };
+
+//     for(var i = 0; i < array.length; i++){
+//         for(var j = 0; j < arrayLength; j++){
+//             newArray[j].push(array[i][j]);
+//         };
+//     };
+
+//     return newArray;
+// }
+
+// cunt = transposeArray([1,2,3],3)
+
+function transpose(matrix) {
+  const rows = matrix.length, cols = matrix[0].length;
+  const grid = [];
+  for (let j = 0; j < cols; j++) {
+    grid[j] = Array(rows);
+  }
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      grid[j][i] = matrix[i][j];
+    }
+  }
+  return grid;
+}
+
+
+g= [[1,3],[7,2],[4,6]]
+h= [[11],[20],[26]]
+
+first= matrix_invert(multiply(transpose(big_matrix), big_matrix))
+second= multiply(first,transpose(big_matrix))
+third= multiply(second,score_concat)
+
+//Replacing NaN and Infinity
+for (i=0;i<8688;i++){
+ score_concat[i] = score_concat[i] ? score_concat[i] : 0
+}
+
+for (i=0;i<8688;i++){
+  for (j=0;j<6;j++){
+
+if (big_matrix[i][j]===Infinity){
+
+  big_matrix[i][j] = 0
+}
+
+
+ big_matrix[i][j] =big_matrix[i][j] ? big_matrix[i][j] : 0
+  }
+}
+
+
+//Creating arrays from the 6 columns of big_matrix
+buhari =function(r){
+  test=[]
+
+for (k=0;k<8688;k++){
+ 
+    test.push(big_matrix[k][r])
+ 
+  
+  }
+  return test
+}
+
+
+test_0=buhari(0)
+test_1=buhari(1)
+test_2=buhari(2)
+test_3=buhari(3)
+test_4=buhari(4)
+test_5=buhari(5)
+
+//testing to see what the entries of the XTX matrix look like
+total=0
+for (u=0;u<8688;u++){
+  total+=test_4[u]*test_0[u]
+}
+
+store=0
+
+for (q=0;q<8688;q++){
+  store+=score_concat[q]*test_0[q]
+}
+
+//creating records (the XTX matrix)
+records=[[],[],[],[],[],[]]
+for (d=0;d<6;d++){
+  for (e=0;e<6;e++){
+    v=buhari(d)
+    w=buhari(e)
+    sum=0
+  for (f=0;f<8688;f++){
+    sum+=(v[f]*w[f])
+    
+
+  }
+  records[d].push(sum)
+
+}
+}
+
+//Creating N (the matrix (XTX)^-1 * XT)
+N=multiply(matrix_invert(records),transpose(big_matrix))
+
+weights=[[],[],[],[],[],[]]
+
+//Calculating the coefficients i.e. weights = (XTX)^-1*XTY
+for(t=0;t<6;t++){
+  summation=0
+  for(z=0;z<8688;z++){
+  summation+=N[t][z]*score_concat[z]
+}
+weights[t].push(summation)
+}
+
+ document.getElementById('Intercept').innerHTML= "Intercept: "+ weights[0][0].toFixed(5);
+ document.getElementById('Commute Time').innerHTML= "Commute Time: "+weights[1][0].toFixed(5);
+ document.getElementById('Nonfamily Households').innerHTML= 'Non-Fam Houses: '+weights[2][0].toFixed(5);
+ document.getElementById('Poverty').innerHTML= 'Poverty: '+weights[3][0].toFixed(5);
+ document.getElementById('Total Population').innerHTML='Total Population: '+ weights[4][0].toFixed(5);
+ document.getElementById('Unemployment').innerHTML= 'Unemployment: '+weights[5][0].toFixed(5);
+
+</script>
+
+
+
+</html>
